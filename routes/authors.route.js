@@ -14,6 +14,18 @@ router.get('/', async (req, res) => {
     }
 })
 
+//Endpoint con query di paginazione
+router.get ('/params', async (req, res)=>{
+    const limit = req.query.limit // parametro per il numero di autori per pagina
+    const skip = (req.query.skip-1) * limit //parametro per la pagina
+    const sort = req.query.sort //parametro per l'ordinamento degli autori
+
+    const filterdAuthors = await Authors.find().sort({name: 1}).limit(limit).skip(skip) //cerco gli autori in base ai parametri di paginazione
+    res.status(200).json(filterdAuthors) //restituisco gli autori filtrati
+    
+    //http://localhost:3001/authors/params?limit=3&skip=1&sort=name
+})
+
 
 //GET autore by id
 router.get('/:id', async (req, res) => {
@@ -59,6 +71,9 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ message: error.message }) //restituisco un errore se non riesco a salvare l'autore
     }
 })
+
+
+
 
 
 export default router;
