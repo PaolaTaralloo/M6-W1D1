@@ -1,7 +1,33 @@
 import express from 'express'
 import Authors from '../models/authorsSchema.js'
+import multer from 'multer'
 
 const router = express.Router()
+
+
+//Configurazione di multer per gestire il caricamento dei file
+const storage = multer.diskStorage({
+    destination:  function(req, file, cb) {
+        cb(null, 'uploads/') //cartella di destinazione
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname) //nome del file
+    }
+})
+
+//Middleware di filtro per accettare solo file di tipo immagine
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg'|| file.mimetype === 'image/jpeg') {//controllo se il file è un'immagine
+        cb(null, true) //se è un'immagine lo accetto
+    } else {
+        cb(null, false) //se non è un'immagine lo rifiuto
+        return cb(new Error('Only .png, .jpg and .jpeg format allowed!')) //restituisco un errore
+    }
+}
+
+
+const upload = multer({ storage: storage, fileFilter: fileFilter }) //creo un'istanza di multer con la configurazione di storage
+
 
 //GET tutti gli autori
 router.get('/', async (req, res) => {
@@ -60,6 +86,14 @@ router.put('/:id', async (req, res) => {
         res.status(400).json({ message: error.message }) //restituisco un errore se non riesco a salvare l'autore
     }
 })
+
+//PATCH carico un'immagine
+router.patch('/:id/avatar', upload.single("avatar"), (req, res) => { 
+
+})
+
+
+
 
 //DELETE elimina un autore by id
 router.delete('/:id', async (req, res) => {
