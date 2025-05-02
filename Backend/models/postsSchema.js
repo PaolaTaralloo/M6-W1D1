@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'; 
+import commentSchema from './commentsSchema.js'
 
 
 const postsSchema = new mongoose.Schema({
@@ -10,7 +11,8 @@ const postsSchema = new mongoose.Schema({
         unit: {type: String, required: true}
     },
     author: {type: String, required: true},
-    content: {type: String, required: true}
+    content: {type: String, required: true},
+    comments: [commentSchema]
 })
 const Posts = mongoose.model("Post", postsSchema);
 export default Posts;

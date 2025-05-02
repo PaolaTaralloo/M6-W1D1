@@ -1,6 +1,7 @@
 import express from 'express'
 import Posts from '../models/postsSchema.js'
 import { uploadCover } from '../middlewares/multer.js'
+import commentSchema from '../models/postsSchema.js'
 
 const router = express.Router();
 
@@ -88,6 +89,30 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ message: error.message }) //restituisco un errore se non riesco a salvare il post
     }
 })
+
+//GET tutti i commenti
+router.get('/:id/comments', async (req, res) => {
+    try {
+        const post = await commentSchema.findById(req.params.id)
+        if (!post) return res.status(404).json({ message: 'Post not found' })
+        res.status(200).json(post.comments)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+})
+
+//GET di un commento by id
+router.get('/:id/comments/:commentId', async (req, res) => {
+    try {
+        const comment = await commentSchema.findById(req.params.commentId)
+        if (!comment) return res.status(404).json({ message: 'Comment not found' })
+        res.status(200).json(comment)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+})
+
+
 
 
 export default router;

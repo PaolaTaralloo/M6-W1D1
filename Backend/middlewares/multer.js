@@ -31,7 +31,7 @@ const authorStorage = new CloudinaryStorage({
         folder: 'avatars', // Cartella in cui verranno salvate le immagini
        public_id: (req, file) => {
             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9) // Genera un suffisso unico per evitare conflitti di nomi
-            return uniqueSuffix + '-' + file.originalname // Restituisce il suffisso unico
+            return uniqueSuffix + '-' + file.originalname.split(".")[0] // Restituisce il suffisso unico
         },
     }
 })
@@ -42,7 +42,7 @@ const postStorage = new CloudinaryStorage({
         folder: 'covers', // Cartella in cui verranno salvate le immagini
        public_id: (req, file) => {
             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9) // Genera un suffisso unico per evitare conflitti di nomi
-            return uniqueSuffix + '-' + file.originalname // Restituisce il suffisso unico
+            return uniqueSuffix + '-' + file.originalname.split(".")[0] // Restituisce il suffisso unico
         },
     }
 })
