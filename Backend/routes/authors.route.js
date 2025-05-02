@@ -1,32 +1,23 @@
 import express from 'express'
 import Authors from '../models/authorsSchema.js'
-import multer from 'multer'
+import { uploadAvatar } from '../middlewares/multer.js'
+
 
 const router = express.Router()
 
 
 //Configurazione di multer per gestire il caricamento dei file
-const storage = multer.diskStorage({
-    destination:  function(req, file, cb) {
-        cb(null, 'uploads/') //cartella di destinazione
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.originalname) //nome del file
-    }
-})
+// const storage = multer.diskStorage({
+//     destination:  function(req, file, cb) {
+//         cb(null, 'uploads/') //cartella di destinazione
+//     },
+//     filename: (req, file, cb) => {
+//         cb(null, file.originalname) //nome del file
+//     }
+// })
 
-//Middleware di filtro per accettare solo file di tipo immagine
-const fileFilter = (req, file, cb) => {
-    if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg'|| file.mimetype === 'image/jpeg') {//controllo se il file è un'immagine
-        cb(null, true) //se è un'immagine lo accetto
-    } else {
-        cb(null, false) //se non è un'immagine lo rifiuto
-        return cb(new Error('Only .png, .jpg and .jpeg format allowed!')) //restituisco un errore
-    }
-}
-
-
-const upload = multer({ storage: storage, fileFilter: fileFilter }) //creo un'istanza di multer con la configurazione di storage
+//creo un'istanza di multer con la configurazione di storage
+// const upload = multer({ storage: storage, fileFilter: fileFilter }) 
 
 
 //GET tutti gli autori
@@ -41,14 +32,14 @@ router.get('/', async (req, res) => {
 })
 
 //Endpoint con query di paginazione
-router.get ('/params', async (req, res)=>{
+router.get('/params', async (req, res) => {
     const limit = req.query.limit // parametro per il numero di autori per pagina
-    const skip = (req.query.skip-1) * limit //parametro per la pagina
+    const skip = (req.query.skip - 1) * limit //parametro per la pagina
     const sort = req.query.sort //parametro per l'ordinamento degli autori
 
-    const filterdAuthors = await Authors.find().sort({[sort]: 1}).limit(limit).skip(skip) //cerco gli autori in base ai parametri di paginazione
+    const filterdAuthors = await Authors.find().sort({ [sort]: 1 }).limit(limit).skip(skip) //cerco gli autori in base ai parametri di paginazione
     res.status(200).json(filterdAuthors) //restituisco gli autori filtrati
-    
+
     //http://localhost:3001/authors/params?limit=3&skip=1&sort=name
 })
 
@@ -87,12 +78,21 @@ router.put('/:id', async (req, res) => {
     }
 })
 
-//PATCH carico un'immagine
-router.patch('/:id/avatar', upload.single("avatar"), (req, res) => { 
-
+//PATCH carico un'immagine avatar per un autore by id
+router.patch('/:id/avatar', uploadAvatar, async (req, res) => {
+    const id = req.params.id //prendo l'id dell'autore
+    try {
+        const authorUpdated = await Authors.findByIdAndUpdate(
+            id,
+            { avatar: req.file.path },
+            { new: true }
+        )
+        res.status(200).json(authorUpdated) //restituisco l'autore aggiornato
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: error.message }) //restituisco un errore se non riesco a salvare l'autore
+    }
 })
-
-
 
 
 //DELETE elimina un autore by id
@@ -105,9 +105,6 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ message: error.message }) //restituisco un errore se non riesco a salvare l'autore
     }
 })
-
-
-
 
 
 export default router;
