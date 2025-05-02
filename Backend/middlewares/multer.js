@@ -1,6 +1,6 @@
 //Import necessari 
 import {v2 as cloudinary} from 'cloudinary'
-import "dot.env/config.js" //importo dotenv per utilizzare le variabili d'ambiente
+import "dotenv/config"
 import multer from 'multer'
 import {CloudinaryStorage} from 'multer-storage-cloudinary'
 
