@@ -1,7 +1,7 @@
 import express from 'express'
 import Posts from '../models/postsSchema.js'
+import Comment from '../models/commentsSchema.js'
 import { uploadCover } from '../middlewares/multer.js'
-import commentSchema from '../models/postsSchema.js'
 
 const router = express.Router();
 
@@ -93,7 +93,7 @@ router.delete('/:id', async (req, res) => {
 //GET tutti i commenti
 router.get('/:id/comments', async (req, res) => {
     try {
-        const post = await commentSchema.findById(req.params.id)
+        const post = await Posts.findById(req.params.id).populate('comments')
         if (!post) return res.status(404).json({ message: 'Post not found' })
         res.status(200).json(post.comments)
     } catch (error) {
@@ -104,7 +104,7 @@ router.get('/:id/comments', async (req, res) => {
 //GET di un commento by id
 router.get('/:id/comments/:commentId', async (req, res) => {
     try {
-        const comment = await commentSchema.findById(req.params.commentId)
+        const comment = await Comment.findById(req.params.commentId)
         if (!comment) return res.status(404).json({ message: 'Comment not found' })
         res.status(200).json(comment)
     } catch (error) {
@@ -112,6 +112,69 @@ router.get('/:id/comments/:commentId', async (req, res) => {
     }
 })
 
+
+//POST di un commento
+router.post('/:id/comments', async (req, res) => {
+    try {
+        // 1. Trova il post
+        const post = await Posts.findById(req.params.id)
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' })
+        }
+
+        // 2. Crea il nuovo commento
+        const comment = new Comment({
+            author: req.body.author,
+            text: req.body.text
+        })
+
+        // 3. Salva il commento
+        const savedComment = await comment.save()
+
+        // 4. Aggiungi il riferimento del commento al post
+        post.comments.push(savedComment._id)
+        await post.save()
+
+        // 5. Restituisci il commento creato
+        res.status(201).json(savedComment)
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    }
+})
+
+//PUT modifica un commento by id
+router.put('/:id/comments/:commentId', async (req, res) => {
+    try {
+        const comment = await Comment.findByIdAndUpdate( //cerco il commento in base all'id e lo aggiorno
+            req.params.commentId, //cerco il commento in base all'id
+            req.body, //prendo il body della richiesta
+            { new: true }// restituisco il commento aggiornato
+        )
+        if (!comment) return res.status(404).json({ message: 'Comment not found' }) //se non trovo il commento restituisco un errore
+        res.status(200).json(comment)
+    } catch (error) {
+        res.status(400).json({ message: error.message }) //restituisco un errore se non riesco a salvare il commento
+    }
+})
+
+//DELETE elimina un commento by id
+router.delete('/:id/comments/:commentId', async (req, res) => {
+    try {
+        // Rimuovi il commento dalla collezione comments
+        const comment = await Comment.findByIdAndDelete(req.params.commentId)
+        if (!comment) return res.status(404).json({ message: 'Comment not found' })
+        
+        // Rimuovi il riferimento dal post
+        await Posts.findByIdAndUpdate(
+            req.params.id,
+            { $pull: { comments: req.params.commentId } }
+        )
+        
+        res.status(200).json({ message: 'Comment deleted' })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+})
 
 
 

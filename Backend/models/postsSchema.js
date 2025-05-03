@@ -12,7 +12,10 @@ const postsSchema = new mongoose.Schema({
     },
     author: {type: String, required: true},
     content: {type: String, required: true},
-    comments: [commentSchema]
+    comments: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment'
+    }]
 })
 const Posts = mongoose.model("Post", postsSchema);
 export default Posts;
