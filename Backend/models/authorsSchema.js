@@ -7,6 +7,7 @@ const authorSchema = new mongoose.Schema({
     email: {type: String, required: true},
     born: {type: String, required: true},
     avatar: {type: String, required: true},
+    password: {type: String, required: true},
 })
 
 const Authors = mongoose.model("Author", authorSchema);

@@ -2,11 +2,12 @@ import express from 'express'
 import Posts from '../models/postsSchema.js'
 import Comment from '../models/commentsSchema.js'
 import { uploadCover } from '../middlewares/multer.js'
+import { authMiddleware } from '../middlewares/auth.js'
 
 const router = express.Router();
 
 //GET tutti i posts
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
     try {
         const posts = await Posts.find()
         res.status(200).json(posts)
@@ -41,7 +42,7 @@ router.get('/:id', async (req, res) => {
 })
 
 //POST creo un nuovo post
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
     const post = new Posts(req.body) //creo un un nuovo post in base al modello basato sullo schema defiito con mongoose
     try {
         const newPost = await post.save() //salvo il post nel db
@@ -52,7 +53,7 @@ router.post('/', async (req, res) => {
 })
 
 //PUT modifica un post by id
-router.put('/:id', async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
     try {
         const post = await Posts.findByIdAndUpdate(req.params.id, req.body, { new: true }) //cerco il post in base all'id e lo aggiorno
         if (!post) return res.status(404).json({ message: 'Post not found' }) //se non trovo il post restituisco un errore
@@ -80,7 +81,7 @@ router.patch('/:id/cover', uploadCover, async (req, res) => {
 })
 
 //DELETE elimina un post by id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
     try {
         const post = await Posts.findByIdAndDelete(req.params.id) //cerco il post in base all'id e lo elimino
         if (!post) return res.status(404).json({ message: 'Post not found' }) //se non trovo il post restituisco un errore

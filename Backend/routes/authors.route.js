@@ -1,7 +1,13 @@
 import express from 'express'
 import Authors from '../models/authorsSchema.js'
 import { uploadAvatar } from '../middlewares/multer.js'
+import { authMiddleware } from '../middlewares/auth.js'
+import bcrypt from 'bcrypt'
+import "dotenv/config"
 
+
+const saltRounds = +process.env.SALT_ROUNDS // numero di cicli per la generazione dell'hash della password
+const jwtsecretkey = process.env.JWT_SECRET_KEY // chiave segreta per la generazione del token JWT
 
 const router = express.Router()
 
@@ -21,7 +27,7 @@ const router = express.Router()
 
 
 //GET tutti gli autori
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
     try {
         const authors = await Authors.find()
         res.status(200).json(authors)
@@ -57,18 +63,44 @@ router.get('/:id', async (req, res) => {
 })
 
 //POST creo un nuovo autore
-router.post('/', async (req, res) => {
-    const author = new Authors(req.body) //creo un un nuovo autore in base al modello basato sullo schema defiito con mongoose
+// router.post('/', async (req, res) => {
+//     const author = new Authors(req.body) //creo un un nuovo autore in base al modello basato sullo schema defiito con mongoose
+//     try {
+//         const newAuthor = await author.save() //salvo l'autore nel db
+//         res.status(201).json(newAuthor) //restituisco l'autore appena creato
+//     } catch (error) {
+//         res.status(400).json({ message: error.message }) //restituisco un errore se non riesco a salvare l'autore
+//     }
+// })
+
+router.post('/', authMiddleware, async (req, res) => {
     try {
-        const newAuthor = await author.save() //salvo l'autore nel db
-        res.status(201).json(newAuthor) //restituisco l'autore appena creato
+        // Verifica se password è presente nel body
+        if (!req.body.password) {
+            return res.status(400).json({ message: 'Password is required' })
+        }
+
+        const hashedPassword = await bcrypt.hash(req.body.password, saltRounds)
+        const author = new Authors({
+            ...req.body,
+            password: hashedPassword
+        })
+        const newAuthor = await author.save()
+        
+        // Remove password from response
+        const authorWithoutPassword = { ...newAuthor._doc }
+        delete authorWithoutPassword.password
+        
+        res.status(201).json(authorWithoutPassword)
     } catch (error) {
-        res.status(400).json({ message: error.message }) //restituisco un errore se non riesco a salvare l'autore
+        console.log(error)
+        res.status(400).json({ message: error.message })
     }
 })
 
+
 //PUT modifica un autore by id
-router.put('/:id', async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
     try {
         const author = await Authors.findByIdAndUpdate(req.params.id, req.body, { new: true }) //cerco l'autore in base all'id e lo aggiorno
         if (!author) return res.status(404).json({ message: 'Author not found' }) //se non trovo l'autore restituisco un errore
@@ -96,7 +128,7 @@ router.patch('/:id/avatar', uploadAvatar, async (req, res) => {
 
 
 //DELETE elimina un autore by id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
     try {
         const author = await Authors.findByIdAndDelete(req.params.id) //cerco l'autore in base all'id e lo elimino
         if (!author) return res.status(404).json({ message: 'Author not found' }) //se non trovo l'autore restituisco un errore
