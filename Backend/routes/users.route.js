@@ -1,7 +1,5 @@
 import express from 'express'
-import Users from '../models/usersSchema.js'
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
+
 import "dotenv/config"
 import {authMiddleware} from '../middlewares/auth.js' // Importa il middleware di autenticazione
 

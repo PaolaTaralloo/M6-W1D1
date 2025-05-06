@@ -6,7 +6,7 @@ import db from './db.js'; // Import the connectDB function
 import authorRoutes from './routes/authors.route.js'; // Import author routes
 import postRoutes from './routes/posts.route.js'; // Import post routes
 import authRoutes from './routes/auth.route.js'; // Import auth routes
-import usersRoutes from './routes/users.route.js'; // Import user routes
+
 
 const app = express();
 app.use(cors()); // Use CORS middleware to allow cross-origin requests
@@ -17,7 +17,7 @@ app.use(express.json()); // Middleware to parse JSON request bodies
 app.use('/authors', authorRoutes); //imposto la rotta per gli autori con il prefisso '/authors'
 app.use('/posts', postRoutes); //imposto la rotta per i post con il prefisso '/posts'
 app.use('/auth', authRoutes); //imposto la rotta per gli utenti con il prefisso '/auth'
-app.use('/users', usersRoutes); //imposto la rotta per gli utenti con il prefisso '/users'
+
 
 // Connessione al DB
 db()

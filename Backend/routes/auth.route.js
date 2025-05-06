@@ -1,5 +1,5 @@
 import express from 'express'
-import Users from '../models/usersSchema.js'
+import Authors from '../models/authorsSchema.js'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import "dotenv/config"
@@ -15,7 +15,7 @@ const router = express.Router()
 router.post('/register', async (req, res) => {
     const password = req.body.password
 
-    const user = new Users({
+    const user = new Authors({
         ...req.body,
         password: await bcrypt.hash(password, saltRounds) //salvo l'hash della password
     })
@@ -38,7 +38,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body // Destrutturo l'oggetto req.body per ottenere email e password
 
     try {    
-        const user = await Users.findOne({ email })
+        const user = await Authors.findOne({ email })
         if (!user) {
             return res.status(400).json({ message: 'User not found' })
         }

@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import "dotenv/config"
-import Users from '../models/usersSchema.js'
+import Authors from '../models/authorsSchema.js'
 
 const jwtsecretkey = process.env.JWT_SECRET_KEY
 
@@ -16,7 +16,7 @@ const authMiddleware = async (req, res, next) => {
             const verified = jwt.verify(token, jwtsecretkey)
             
             // Verifica se l'utente esiste ancora nel database
-            const user = await Users.findById(verified.id)
+            const user = await Authors.findById(verified.id)
             if (!user) {
                 return res.status(401).json({ message: 'User no longer exists' })
             }
