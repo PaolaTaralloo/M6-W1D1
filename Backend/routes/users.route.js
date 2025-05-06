@@ -1,5 +1,4 @@
 import express from 'express'
-
 import "dotenv/config"
 import {authMiddleware} from '../middlewares/auth.js' // Importa il middleware di autenticazione
 
