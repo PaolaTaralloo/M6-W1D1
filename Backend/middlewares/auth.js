@@ -6,11 +6,12 @@ const jwtsecretkey = process.env.JWT_SECRET_KEY
 
 const authMiddleware = async (req, res, next) => {
     try {
+     
         const tokenBearer = req.headers.authorization
         if (!tokenBearer) {
             return res.status(401).json({ message: 'Token not provided' })
         }
-
+       
         const token = tokenBearer.replace('Bearer ', '')
         try {
             const verified = jwt.verify(token, jwtsecretkey)
