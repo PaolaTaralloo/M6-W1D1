@@ -5,6 +5,7 @@ import BlogAuthor from "../../components/blog/blog-author/BlogAuthor";
 import BlogLike from "../../components/likes/BlogLike";
 import axios from 'axios';
 import "./styles.css";
+import CommentSection from '../../components/comments/CommentSection';
 
 const Blog = () => {
   const [blog, setBlog] = useState(null);
@@ -63,6 +64,9 @@ const Blog = () => {
         </div>
 
         <div dangerouslySetInnerHTML={{ __html: blog.content }}></div>
+        
+        {/* Aggiungi la sezione commenti */}
+        <CommentSection postId={id} />
       </Container>
     </div>
   );

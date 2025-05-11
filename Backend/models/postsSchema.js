@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'; 
-import Comment from './commentsSchema.js'
+
 
 const postsSchema = new mongoose.Schema({
     category: {type: String, required: true},

@@ -126,13 +126,42 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 //GET tutti i commenti
 router.get('/:id/comments', async (req, res) => {
     try {
-        const post = await Posts.findById(req.params.id).populate('comments')
-        if (!post) return res.status(404).json({ message: 'Post not found' })
-        res.status(200).json(post.comments)
+        const post = await Posts.findById(req.params.id)
+            .populate({
+                path: 'comments',
+                populate: {
+                    path: 'author',
+                    select: 'name surname avatar'
+                }
+            });
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+        res.status(200).json(post.comments);
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        res.status(500).json({ message: error.message });
     }
-})
+});
+
+router.get('/:postId/comments', authMiddleware, async (req, res) => {
+  try {
+    const post = await Posts.findById(req.params.postId)
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'author',
+          select: 'name surname'
+        }
+      });
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post non trovato' });
+    }
+
+    res.json(post.comments);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
 
 //GET di un commento by id
 router.get('/:id/comments/:commentId', async (req, res) => {
