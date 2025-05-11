@@ -11,29 +11,16 @@ const BlogList = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        // Verifica token
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setError('Token non trovato. Effettua il login.');
-          setLoading(false);
-          return;
-        }
-
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts`, {
           headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
-        
-        if (response.data) {
-          setPosts(response.data);
-        } else {
-          setError('Nessun dato ricevuto dal server');
-        }
+        setPosts(response.data);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching posts:', error.response || error);
-        setError(error.response?.data?.message || 'Errore nel caricamento dei posts');
+        console.error('Error fetching posts:', error);
+        setError('Errore nel caricamento dei posts');
         setLoading(false);
       }
     };

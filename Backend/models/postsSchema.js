@@ -9,7 +9,8 @@ const postsSchema = new mongoose.Schema({
         value: {type: Number, required: true},
         unit: {type: String, required: true}
     },
-    author: {type: mongoose.Schema.Types.ObjectId,
+    author: {  // Modificato da array a singolo oggetto
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Author', 
         required: true
     },
@@ -18,7 +19,10 @@ const postsSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Comment'
     }]
+}, {
+    timestamps: true // aggiunto timestamps
 })
+
 const Posts = mongoose.model("Post", postsSchema);
 export default Posts;
 

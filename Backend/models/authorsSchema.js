@@ -6,6 +6,7 @@ const authorSchema = new mongoose.Schema({
     email: {type: String,required: true,unique: true },
     born: {type: String, required: false},
     avatar: {type: String,required: false, default: 'https://ui-avatars.com/api/?name=User+Test'},
+    post: [{type: mongoose.Schema.Types.ObjectId, ref: 'Post'}],
     password: {type: String,required: true,select: false},
     verified: {type: Boolean,default: false }
 }, {

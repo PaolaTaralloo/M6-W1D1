@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import NavBar from "./components/navbar/BlogNavbar";
 import Footer from "./components/footer/Footer";
 import Home from "./views/home/Home";
@@ -7,19 +7,48 @@ import NewBlogPost from "./views/new/New";
 import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
 import LoginPage from "./views/login/LoginPage";
 import RegisterPage from "./views/register/RegisterPage";
-// import { useEffect } from "react";
 
 function App() {
-  //Fetch di prova per verificare il collegamento tra frontend e backend
-  // const fetchAuthors = async () => {
-  //   const res = await fetch (process.env.REACT_APP_APIURL + "/authors");
-  //   const data = await res.json();
-  //   console.log(data);
-  // }
+  const fetchAuthors = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('No token found');
+        return;
+      }
 
-  // useEffect(() => {
-  //   fetchAuthors();
-  // }, [])
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/authors`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Authors:', data);
+    } catch (error) {
+      console.error('Error fetching authors:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAuthors();
+  }, [])
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const token = queryParams.get('token'); 
+
+    if (token) {
+      localStorage.setItem('token', token);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      window.location.reload();
+  }
+}, []);
 
   return (
 

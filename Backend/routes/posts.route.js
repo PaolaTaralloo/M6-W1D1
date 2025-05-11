@@ -10,7 +10,7 @@ const router = express.Router();
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const posts = await Posts.find()
-            .populate('author') // era 'Author' (maiuscolo), deve essere 'author' (minuscolo)
+            .populate('author', 'name surname avatar') // Specifica i campi da popolare
             .populate('comments') // opzionale: popola anche i commenti se necessario
         res.status(200).json(posts)
     } catch (error) {
@@ -41,15 +41,39 @@ router.get('/params', async (req, res) => {
 
 
 //GET post by id
-router.get('/:id', async (req, res) => {
+// router.get('/:id', async (req, res) => {
+//     try {
+//         const post = await Posts.findById(req.params.id)
+//         if (!post) return res.status(404).json({ message: 'Post not found' });
+//         res.status(200).json(post)
+//     } catch (error) {
+//         res.status(500).json({ message: error.message })
+//     }
+// })
+
+
+router.get('/:id', authMiddleware, async (req, res) => {
     try {
         const post = await Posts.findById(req.params.id)
-        if (!post) return res.status(404).json({ message: 'Post not found' });
-        res.status(200).json(post)
+            .populate('author', 'name surname avatar')
+            .populate({
+                path: 'comments',
+                populate: {
+                    path: 'author',
+                    select: 'name surname avatar'
+                }
+            });
+            
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+        
+        res.status(200).json(post);
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        console.error('Error fetching post:', error);
+        res.status(500).json({ message: error.message });
     }
-})
+});
 
 //POST creo un nuovo post
 router.post('/', authMiddleware, async (req, res) => {
