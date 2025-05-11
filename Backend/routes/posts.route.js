@@ -7,7 +7,7 @@ import { authMiddleware } from '../middlewares/auth.js'
 const router = express.Router();
 
 //GET tutti i posts
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const posts = await Posts.find()
             .populate('author', 'name surname avatar') // Specifica i campi da popolare
