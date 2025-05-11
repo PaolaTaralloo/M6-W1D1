@@ -1,20 +1,61 @@
-import React from "react";
-import { Col, Row } from "react-bootstrap";
-import posts from "../../../data/posts.json";
+import React, { useEffect, useState } from "react";
+import { Col, Row, Alert, Spinner } from "react-bootstrap";
 import BlogItem from "../blog-item/BlogItem";
+import axios from 'axios';
 
-const BlogList = props => {
+const BlogList = () => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        // Verifica token
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError('Token non trovato. Effettua il login.');
+          setLoading(false);
+          return;
+        }
+
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        if (response.data) {
+          setPosts(response.data);
+        } else {
+          setError('Nessun dato ricevuto dal server');
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching posts:', error.response || error);
+        setError(error.response?.data?.message || 'Errore nel caricamento dei posts');
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  if (loading) return <Spinner animation="border" className="d-block mx-auto" />;
+  if (error) return <Alert variant="danger">{error}</Alert>;
+  if (!posts.length) return <Alert variant="info">Nessun post disponibile</Alert>;
+
   return (
     <Row>
-      {posts.map((post, i) => (
+      {posts.map((post) => (
         <Col
-          key={`item-${i}`}
+          key={post._id}
           md={4}
           style={{
             marginBottom: 50,
           }}
         >
-          <BlogItem key={post.title} {...post} />
+          <BlogItem {...post} />
         </Col>
       ))}
     </Row>

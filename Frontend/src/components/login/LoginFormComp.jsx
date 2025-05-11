@@ -26,6 +26,7 @@ const LoginForm = () => {
       
       if (response.token) {
         localStorage.setItem('token', response.token)
+        console.log('Token salvato:', localStorage.getItem('token'))
       }
       
       alert("Login avvenuto con successo")

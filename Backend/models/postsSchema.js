@@ -1,6 +1,5 @@
 import mongoose from 'mongoose'; 
-import commentSchema from './commentsSchema.js'
-
+import Comment from './commentsSchema.js'
 
 const postsSchema = new mongoose.Schema({
     category: {type: String, required: true},
@@ -10,7 +9,10 @@ const postsSchema = new mongoose.Schema({
         value: {type: Number, required: true},
         unit: {type: String, required: true}
     },
-    author: {type: String, required: true},
+    author: {type: mongoose.Schema.Types.ObjectId,
+        ref: 'Author', 
+        required: true
+    },
     content: {type: String, required: true},
     comments: [{
         type: mongoose.Schema.Types.ObjectId,

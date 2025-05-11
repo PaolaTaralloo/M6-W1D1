@@ -10,8 +10,11 @@ const router = express.Router();
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const posts = await Posts.find()
+            .populate('author') // era 'Author' (maiuscolo), deve essere 'author' (minuscolo)
+            .populate('comments') // opzionale: popola anche i commenti se necessario
         res.status(200).json(posts)
     } catch (error) {
+        console.error('Error fetching posts:', error); // aggiungi log dell'errore
         res.status(500).json({ message: error.message })
     }
 
@@ -19,14 +22,21 @@ router.get('/', authMiddleware, async (req, res) => {
 
 //Endpoint con query di paginazione
 router.get('/params', async (req, res) => {
-    const limit = req.query.limit // parametro per il numero di autori per pagina
-    const skip = (req.query.skip - 1) * limit //parametro per la pagina
-    const sort = req.query.sort //parametro per l'ordinamento degli autori
+    try {
+        const limit = req.query.limit 
+        const skip = (req.query.skip - 1) * limit
+        const sort = req.query.sort
 
-    const filterdPosts = await Posts.find().sort({ [sort]: 1 }).limit(limit).skip(skip) //cerco gli autori in base ai parametri di paginazione
-    res.status(200).json(filterdPosts) //restituisco gli autori filtrati
-
-    //http://localhost:3001/authors/params?limit=3&skip=1&sort=name
+        const filteredPosts = await Posts.find()
+            .populate('author')  // correzione: 'Authors' -> 'author'
+            .sort({ [sort]: 1 })
+            .limit(Number(limit))
+            .skip(Number(skip))
+        
+        res.status(200).json(filteredPosts)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
 })
 
 
@@ -64,19 +74,17 @@ router.put('/:id', authMiddleware, async (req, res) => {
 })
 
 //PATCH carico un'immagine cover per un post by id
-router.patch('/:id/cover', uploadCover, async (req, res) => {
-    const id = req.params.id //prendo l'id del post
+router.patch('/:id/cover', uploadCover, async (req, res, next) => { // aggiunto next
+    const id = req.params.id
     try {
         const postEdit = await Posts.findByIdAndUpdate(
             id,
             { cover: req.file.path },
             { new: true }
         )
-        res.status(200).json(postEdit) //restituisco il post aggiornato
+        res.status(200).json(postEdit)
     } catch (error) {
-        // console.log(error)
-        // res.status(500).json({ message: error.message })
-        next(error) //passo l'errore al middleware di gestione degli errori
+        next(error)
     }
 })
 
