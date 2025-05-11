@@ -6,8 +6,9 @@ import bcrypt from 'bcrypt'
 import "dotenv/config"
 
 
+
 const saltRounds = +process.env.SALT_ROUNDS // numero di cicli per la generazione dell'hash della password
-const jwtsecretkey = process.env.JWT_SECRET_KEY // chiave segreta per la generazione del token JWT
+//const jwtsecretkey = process.env.JWT_SECRET_KEY // chiave segreta per la generazione del token JWT
 
 const router = express.Router()
 
@@ -38,15 +39,40 @@ router.get('/', authMiddleware, async (req, res) => {
 })
 
 //Endpoint con query di paginazione
+// router.get('/params', async (req, res) => {
+//     const limit = req.query.limit // parametro per il numero di autori per pagina
+//     const skip = (req.query.skip - 1) * limit //parametro per la pagina
+//     const sort = req.query.sort //parametro per l'ordinamento degli autori
+
+//     const filterdAuthors = await Authors.find().sort({ [sort]: 1 }).limit(limit).skip(skip) //cerco gli autori in base ai parametri di paginazione
+//     res.status(200).json(filterdAuthors) //restituisco gli autori filtrati
+
+//     //http://localhost:3001/authors/params?limit=3&skip=1&sort=name
+// })
+
+
+//Endpoint con query di paginazione
 router.get('/params', async (req, res) => {
-    const limit = req.query.limit // parametro per il numero di autori per pagina
-    const skip = (req.query.skip - 1) * limit //parametro per la pagina
-    const sort = req.query.sort //parametro per l'ordinamento degli autori
+    try {
+        const { limit = 10, page = 1, sort = 'name' } = req.query
+        const skip = (page - 1) * limit
 
-    const filterdAuthors = await Authors.find().sort({ [sort]: 1 }).limit(limit).skip(skip) //cerco gli autori in base ai parametri di paginazione
-    res.status(200).json(filterdAuthors) //restituisco gli autori filtrati
-
-    //http://localhost:3001/authors/params?limit=3&skip=1&sort=name
+        const filteredAuthors = await Authors.find()
+            .sort({ [sort]: 1 })
+            .limit(Number(limit))
+            .skip(Number(skip))
+        
+        const total = await Authors.countDocuments()
+        
+        res.status(200).json({
+            authors: filteredAuthors,
+            total,
+            pages: Math.ceil(total / limit),
+            currentPage: page
+        })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
 })
 
 
@@ -102,11 +128,24 @@ router.post('/', authMiddleware, async (req, res) => {
 //PUT modifica un autore by id
 router.put('/:id', authMiddleware, async (req, res) => {
     try {
-        const author = await Authors.findByIdAndUpdate(req.params.id, req.body, { new: true }) //cerco l'autore in base all'id e lo aggiorno
-        if (!author) return res.status(404).json({ message: 'Author not found' }) //se non trovo l'autore restituisco un errore
-        res.status(200).json(author) //restituisco l'autore aggiornato
+        // Hash new password if provided
+        if (req.body.password) {
+            req.body.password = await bcrypt.hash(req.body.password, saltRounds);
+        }
+        
+        const author = await Authors.findByIdAndUpdate(
+            req.params.id, 
+            req.body, 
+            { new: true }
+        ).select('-password');
+        
+        if (!author) {
+            return res.status(404).json({ message: 'Author not found' });
+        }
+        
+        res.status(200).json(author);
     } catch (error) {
-        res.status(400).json({ message: error.message }) //restituisco un errore se non riesco a salvare l'autore
+        res.status(400).json({ message: error.message });
     }
 })
 

@@ -7,11 +7,14 @@ import authorRoutes from './routes/authors.route.js'; // Import author routes
 import postRoutes from './routes/posts.route.js'; // Import post routes
 import authRoutes from './routes/auth.route.js'; // Import auth routes
 import usersRoutes from './routes/users.route.js'; // Import user routes
+import passport from 'passport';
+import googleStrategy from './middlewares/Oauth.js';
+
 
 const app = express();
 app.use(cors()); // Use CORS middleware to allow cross-origin requests
 app.use(express.json()); // Middleware to parse JSON request bodies
-
+passport.use(googleStrategy); // Use the Google strategy for authentication
 
 //Registra le routes
 app.use('/authors', authorRoutes); //imposto la rotta per gli autori con il prefisso '/authors'
