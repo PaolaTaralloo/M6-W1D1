@@ -36,6 +36,10 @@ const LoginForm = () => {
     }
   }
 
+  const handleGoogleLogin = () => {
+    window.location.href = `${process.env.REACT_APP_API_URL}/auth/google`
+  }
+
   return (
     <Container>
     {error && <Alert variant="danger">{error}</Alert>}
@@ -63,9 +67,11 @@ const LoginForm = () => {
           required 
         />
       </Form.Group>
-
-      <Button variant="primary" type="submit">Login</Button>
+      <Button variant="dark" type="submit" className='w-100' >Login</Button>
+      <Button variant="primary" type="button" className='w-100 mt-4' onClick={handleGoogleLogin} href='http://localhost:3001/auth/google'>Google Login</Button>
+     
     </Form>
+
   </Container>
 )
 }

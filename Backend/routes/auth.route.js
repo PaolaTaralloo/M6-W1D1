@@ -9,7 +9,7 @@ const router = express.Router()
 const saltRounds = +process.env.SALT_ROUNDS
 const jwtsecretkey = process.env.JWT_SECRET_KEY
 
-// Helper function to generate JWT token
+// Funzione per generare un token JWT per l'utente autenticato
 const generateToken = (user) => {
     return jwt.sign({ 
         id: user._id,
@@ -99,26 +99,21 @@ router.get('/google',
 
 
 
-router.get('/google/callback', 
+router.get('/google/callback',
     passport.authenticate('google', { 
-        session: false, 
-        failureRedirect: '/auth/login' 
+      session: false,
+      failureRedirect: `${process.env.FRONTEND_URL}/login` 
     }),
-    async (req, res) => {
-        try {
-            const { user, token } = req.user;
-            
-            // Redirect to frontend with both user data and token
-            res.redirect(
-                `${process.env.FRONTEND_URL}/auth/success?` + 
-                `token=${token}&` +
-                `userId=${user._id}`
-            );
-        } catch (error) {
-            console.error(error);
-            res.redirect(`${process.env.FRONTEND_URL}/auth/error`);
-        }
+    (req, res) => {
+      try {
+        const { token } = req.user;
+        // Redirect alla home del frontend con il token
+        res.redirect(`${process.env.FRONTEND_URL}/?token=${token}`);
+      } catch (error) {
+        console.error('Callback error:', error);
+        res.redirect(`${process.env.FRONTEND_URL}/login`);
+      }
     }
-);
+  );
 
 export default router
