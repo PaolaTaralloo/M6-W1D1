@@ -77,14 +77,25 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
 //POST creo un nuovo post
 router.post('/', authMiddleware, async (req, res) => {
-    const post = new Posts(req.body) //creo un un nuovo post in base al modello basato sullo schema defiito con mongoose
     try {
-        const newPost = await post.save() //salvo il post nel db
-        res.status(201).json(newPost) //restituisco il post appena creato
+        // Usa l'ID dell'utente autenticato come autore
+        const post = new Posts({
+            ...req.body,
+            author: req.user._id // req.user viene settato dal authMiddleware
+        });
+
+        const newPost = await post.save();
+        
+        // Popola l'autore prima di inviare la risposta
+        const populatedPost = await Posts.findById(newPost._id)
+            .populate('author', 'name surname avatar');
+            
+        res.status(201).json(populatedPost);
     } catch (error) {
-        res.status(400).json({ message: error.message }) //restituisco un errore se non riesco a salvare il post
+        console.error('Error creating post:', error);
+        res.status(400).json({ message: error.message });
     }
-})
+});
 
 //PUT modifica un post by id
 router.put('/:id', authMiddleware, async (req, res) => {
