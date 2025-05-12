@@ -69,7 +69,7 @@ const LoginForm = () => {
         />
       </Form.Group>
       <Button variant="dark" type="submit" className='w-100' >Login</Button>
-      <Button variant="primary" type="button" className='w-100 mt-4' onClick={handleGoogleLogin} href='https://m6-w1d1.onrender.com/auth/googlelogin'>Google Login</Button>
+      <Button variant="primary" type="button" className='w-100 mt-4' onClick={handleGoogleLogin} href='https://m6-w1d1.onrender.com/auth/google'>Google Login</Button>
      
     </Form>
 
