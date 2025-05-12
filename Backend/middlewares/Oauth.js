@@ -2,7 +2,7 @@ import "dotenv/config";
 import GoogleStrategy from 'passport-google-oauth20';
 import Authors from "../models/authorsSchema.js";
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt'; //bcrypt è una libreria per la crittografia delle password
 
 const jwtsecretkey = process.env.JWT_SECRET_KEY;
 
